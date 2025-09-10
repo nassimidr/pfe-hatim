@@ -54,9 +54,8 @@ jobs:
           tags: nassimidr/pfehatim-frontend:latest
 
       # 7️⃣ Déploiement sur serveur via SSH (optionnel)
-      # Ajouter les secrets : SSH_HOST, SSH_USER, SSH_KEY dans GitHub
       - name: Deploy to Server
-        if: ${{ secrets.SSH_HOST != '' }}  # exécute seulement si SSH_HOST existe
+        if: ${{ always() }}  # exécute toujours, tu peux contrôler via secrets plus tard
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
