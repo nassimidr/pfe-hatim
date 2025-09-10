@@ -23,9 +23,18 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/pfehatim
       - NODE_ENV=production
-      # ajoute ici d'autres variables si ton backend les utilise
+      # autres variables si nécessaire
       # - JWT_SECRET=ton_secret
       # - PORT=5000
+
+  frontend:
+    build: ./frontend   # chemin vers ton dossier frontend contenant le Dockerfile
+    container_name: pfehatim-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"       # nginx sert l'app sur le port 80 dans le container
 
 volumes:
   mongo_data:

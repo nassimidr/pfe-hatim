@@ -1,13 +1,12 @@
-# Étape 1 : Build avec Node
-FROM node:18 AS build
+# Dockerfile
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build   # génère le dossier dist/
+RUN npm run build
 
-# Étape 2 : Servir avec Nginx
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
