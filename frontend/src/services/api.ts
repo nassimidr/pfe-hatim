@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://51.21.152.33:5000/api';
 
 // Types pour les réponses API
 interface ApiResponse<T> {

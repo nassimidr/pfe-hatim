@@ -13,11 +13,11 @@ export default defineConfig({
     postcss: './postcss.config.mjs', // 🔧 important pour Tailwind CSS avec PostCSS séparé
   },
   define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify('http://localhost:5000/api'),
+    'import.meta.env.VITE_API_URL': JSON.stringify('http://51.21.152.33:5000/api'),
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:5000'
+      '/api': 'http://51.21.152.33:5000/api'
     },
     port: 5173,
     strictPort: true,
