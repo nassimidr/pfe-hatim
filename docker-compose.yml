@@ -1,36 +1,31 @@
+version: '3.8'
+
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=development
-      - MONGO_URI=${MONGO_URI}
-    depends_on:
-      - mongo
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    environment:
-    - NODE_ENV=production
-
   mongo:
-    image: mongo:6
-    container_name: mongo
+    image: mongo:6.0
+    container_name: pfehatim-mongo
+    restart: always
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: pfehatim
+
+  backend:
+    image: nassimidr/pfehatim-backend:latest
+    container_name: pfehatim-backend
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/pfehatim
+      - NODE_ENV=production
+      # ajoute ici d'autres variables si ton backend les utilise
+      # - JWT_SECRET=ton_secret
+      # - PORT=5000
 
 volumes:
-  mongo-data:
+  mongo_data:
