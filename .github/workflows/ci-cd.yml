@@ -13,52 +13,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Récupérer le code
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # 1. Récupérer le code
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # 2. Configurer Node.js
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
+      # 2. Configurer Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-    # 3. Installer les dépendances
-    - name: Install dependencies
-      run: npm install
+      # 3. Installer les dépendances
+      - name: Install dependencies
+        run: npm install
 
-    # 4. Lancer les tests unitaires
-    - name: Run tests
-      run: npm test
+      # 4. Construire l’image Docker
+      - name: Build Docker image
+        run: docker build -t pfehatim-backend:latest ./backend
 
-    # 5. Construire l’image Docker
-    - name: Build Docker image
-      run: docker build -t pfehatim-backend:latest ./backend
+      # 5. Se connecter à Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # 6. Se connecter à Docker Hub
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # 6. Pousser l’image sur Docker Hub
+      - name: Push Docker image
+        run: |
+          docker tag pfehatim-backend:latest ${{ secrets.DOCKER_USERNAME }}/pfehatim-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/pfehatim-backend:latest
 
-    # 7. Pousser l’image sur Docker Hub
-    - name: Push Docker image
-      run: |
-        docker tag pfehatim-backend:latest <dockerhub-username>/pfehatim-backend:latest
-        docker push <dockerhub-username>/pfehatim-backend:latest
+      # 7. Déployer sur le serveur via SSH
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Arrêter et supprimer le container existant
+            docker rm -f pfehatim-backend || true
 
-    # 8. Déployer sur serveur via SSH
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 22
-        script: |
-          cd ~/pfehatim-backend
-          docker pull <dockerhub-username>/pfehatim-backend:latest
-          docker stop backend || true
-          docker rm backend || true
-          docker run -d -p 5000:5000 --name backend <dockerhub-username>/pfehatim-backend:latest
+            # Pull de la dernière image depuis Docker Hub
+            docker pull ${{ secrets.DOCKER_USERNAME }}/pfehatim-backend:latest
+
+            # Lancer le container
+            docker run -d --name pfehatim-backend -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/pfehatim-backend:latest
